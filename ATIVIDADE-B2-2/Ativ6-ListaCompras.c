@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 typedef struct {
   int idProduto;
@@ -12,6 +13,7 @@ typedef struct {
 int id = 0;
 
 void inserirProduto(Produto *produto) {
+  int erro = 0;
   
   produto[id].idProduto = id + 1; 
 
@@ -21,15 +23,26 @@ void inserirProduto(Produto *produto) {
   
   printf("Digite a descrição do produto: ");
   fgets(produto[id].dsProduto, sizeof(produto[id].dsProduto), stdin);
+  
 
   printf("Digite o valor do produto: ");
   scanf("%lf", &produto[id].vlProduto);
   getchar();
 
+  while(produto[id].vlProduto <= 0){
+    printf("Valor inválido, deve ser maior que 0: ");
+    scanf("%lf", &produto[id].vlProduto);
+    getchar();
+  }
+  
   printf("Digite a quantidade do produto: ");
   scanf("%i", &produto[id].qtProduto);
-  getchar();
-
+  
+  while(produto[id].qtProduto < 0){
+    printf("Valor inválido, deve ser maior que 0: ");
+    scanf("%i", &produto[id].qtProduto);
+    getchar();
+  }
   id++;
 }
 
@@ -52,15 +65,15 @@ int listarProdutos(Produto *produto){
     printf("Não há produtos cadastrados\n");
     return 0;
   } 
-  
+
   bubbleSort(produto);
   
     printf("Produtos inseridos: \n");
-    printf("|código  nome  valor  quantidade|\n");
+   printf("|código\t nome\t \tvalor\t quantidade|\n");
      
   //optei por não mostrar a descrição do produto pois ficaria muito grande, apenas uma questão de estética.
     for(int i = 0; i < id; i++){
-        printf("%3i. %-10s %.2lf %5i\n", produto[i].idProduto, produto[i].nmProduto, produto[i].vlProduto, produto[i].qtProduto);
+      printf("%4i.\t %-10s %.2lf\t %5i\n", produto[i].idProduto, produto[i].nmProduto, produto[i].vlProduto, produto[i].qtProduto);
     }
 }
 
@@ -79,15 +92,22 @@ void comprarProdutos(Produto *produto){
     printf("Selecione a quantidade: \n");
     scanf("%i", &quantidade);
     getchar();
-
-    if(quantidade > produto[escolha - 1].qtProduto){
+    
+for(int i = 0; i < sizeof(produto); i++){
+  if(produto[i].idProduto == escolha){
+    if(quantidade > produto[i].qtProduto){
       printf("quantidade indisponível\n");
     } else {
-      produto[escolha-1].qtProduto -= quantidade;
-      total += produto[escolha-1].vlProduto * quantidade;
+      produto[i].qtProduto -= quantidade;
+      total += produto[i].vlProduto * quantidade;
     }
+    break;
+  }
+}
+    
     printf("Deseja adicionar mais produtos? (s/n): \n");
     scanf("%c", &resposta);
+    
     if(resposta == 'n'){
       printf("Compra finalizada\n total: %.2lf", total);
       break;
@@ -110,7 +130,8 @@ int menu(){
 
 int main() {
   
-  Produto produto[100];
+  Produto *produto;
+  produto = (Produto *)malloc(sizeof(produto) * 100);
   
   while (1) {
 
@@ -126,6 +147,7 @@ int main() {
       break;
     case 4:
       printf("Código terminado...");
+      free(produto);
       return 0;
     }
   }
